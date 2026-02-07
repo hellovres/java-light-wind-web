@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<th:block th:fragment="footer">
+    <footer class="bg-light text-center py-4 mt-auto">
+        <div class="container">
+            <p class="mb-2 text-muted">
+                &copy; <span th:text="${#dates.year(#dates.createNow())}">2024</span>
+                Light Wind Auth. All rights reserved.
+            </p>
+            <p class="mb-0 small text-muted">
+                基于 Spring Boot + JWT 的轻量级认证系统
+            </p>
+        </div>
+    </footer>
+</th:block>
+</body>
+</html>

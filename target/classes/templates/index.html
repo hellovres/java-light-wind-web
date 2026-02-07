@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base}">
+<head>
+    <meta charset="UTF-8">
+    <title>首页 - Light Wind Auth</title>
+</head>
+<body>
+<th:block layout:fragment="content">
+    <div class="container py-5">
+        <!-- Hero Section -->
+        <div class="row align-items-center mb-5">
+            <div class="col-lg-6 text-center text-lg-start">
+                <h1 class="display-4 fw-bold mb-4">
+                    欢迎来到
+                    <span class="text-primary">Light Wind Auth</span>
+                </h1>
+                <p class="lead mb-4">
+                    基于Spring Boot + JWT的轻量级认证系统，
+                    简洁、安全、易用。
+                </p>
+                <div class="d-flex gap-3 justify-content-center justify-content-lg-start">
+                    <a th:if="${session.user == null}" th:href="@{/register}"
+                       class="btn btn-primary btn-lg">
+                        <i class="bi bi-person-plus"></i> 立即注册
+                    </a>
+                    <a th:if="${session.user == null}" th:href="@{/login}"
+                       class="btn btn-outline-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right"></i> 立即登录
+                    </a>
+                    <a th:if="${session.user != null}" th:href="@{/profile}"
+                       class="btn btn-primary btn-lg">
+                        <i class="bi bi-person"></i> 个人中心
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center mt-4 mt-lg-0">
+                <div class="hero-image">
+                    <i class="bi bi-shield-check text-primary" style="font-size: 200px;"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- 用户信息卡片 -->
+        <div th:if="${session.user != null}" class="row mb-5">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="user-avatar me-3">
+                                <i class="bi bi-person-circle" style="font-size: 60px;"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-1">
+                                    <i class="bi bi-person-fill"></i>
+                                    <span th:text="${session.username} ?: '用户'">用户</span>
+                                </h5>
+                                <p class="card-text text-muted mb-0">
+                                    <i class="bi bi-clock"></i>
+                                    登录时间：<span th:text="${#temporals.format(#temporals.createNow(), 'yyyy-MM-dd HH:mm:ss')}"></span>
+                                </p>
+                            </div>
+                            <div class="ms-auto">
+                                <button class="btn btn-outline-danger" onclick="logout();">
+                                    <i class="bi bi-box-arrow-right"></i> 登出
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 特性展示 -->
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-speedometer2 text-primary" style="font-size: 48px;"></i>
+                        </div>
+                        <h5 class="card-title">轻量级</h5>
+                        <p class="card-text text-muted">
+                            无需数据库，使用内存存储，快速启动，
+                            适合开发、测试和演示。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-shield-lock text-success" style="font-size: 48px;"></i>
+                        </div>
+                        <h5 class="card-title">安全可靠</h5>
+                        <p class="card-text text-muted">
+                            采用JWT无状态认证，BCrypt密码加密，
+                            双Token机制提升安全性。
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="feature-icon mb-3">
+                            <i class="bi bi-code-slash text-info" style="font-size: 48px;"></i>
+                        </div>
+                        <h5 class="card-title">简单易用</h5>
+                        <p class="card-text text-muted">
+                            代码简洁，结构清晰，易于理解和扩展，
+                            快速集成到现有项目。
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 技术栈展示 -->
+        <div class="row mt-5">
+            <div class="col-12">
+                <h3 class="text-center mb-4">技术栈</h3>
+                <div class="d-flex flex-wrap justify-content-center gap-3">
+                    <span class="badge bg-primary fs-6 p-3">
+                        <i class="bi bi-bootstrap"></i> Spring Boot 3.2
+                    </span>
+                    <span class="badge bg-success fs-6 p-3">
+                        <i class="bi bi-shield-lock"></i> Spring Security 6
+                    </span>
+                    <span class="badge bg-info fs-6 p-3">
+                        <i class="bi bi-key"></i> JWT
+                    </span>
+                    <span class="badge bg-warning fs-6 p-3">
+                        <i class="bi bi-hash"></i> BCrypt
+                    </span>
+                    <span class="badge bg-secondary fs-6 p-3">
+                        <i class="bi bi-cpu"></i> 内存存储
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</th:block>
+
+<th:block layout:fragment="styles">
+    <style>
+        .hero-image {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+        }
+
+        .feature-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(13, 110, 253, 0.1), rgba(13, 110, 253, 0.05));
+        }
+
+        .user-avatar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+    </style>
+</th:block>
+</body>
+</html>

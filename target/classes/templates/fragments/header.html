@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<th:block th:fragment="header(title)">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand" th:href="@{/}">
+                <i class="bi bi-shield-lock-fill text-primary"></i>
+                <span class="ms-2 fw-bold">Light Wind Auth</span>
+            </a>
+
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
+                    aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:classappend="${title == '首页'} ? 'active' : ''"
+                           th:href="@{/}">
+                            <i class="bi bi-house"></i> 首页
+                        </a>
+                    </li>
+
+                    <!-- 未登录状态 -->
+                    <li class="nav-item" th:if="${session.user == null}">
+                        <a class="nav-link" th:classappend="${title == '登录'} ? 'active' : ''"
+                           th:href="@{/login}">
+                            <i class="bi bi-box-arrow-in-right"></i> 登录
+                        </a>
+                    </li>
+                    <li class="nav-item" th:if="${session.user == null}">
+                        <a class="nav-link" th:classappend="${title == '注册'} ? 'active' : ''"
+                           th:href="@{/register}">
+                            <i class="bi bi-person-plus"></i> 注册
+                        </a>
+                    </li>
+
+                    <!-- 已登录状态 -->
+                    <li class="nav-item dropdown" th:if="${session.user != null}">
+                        <a class="nav-link dropdown-toggle" href="#" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-person-circle"></i>
+                            <span th:text="${session.username} ?: '用户'">用户</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" th:href="@{/profile}">
+                                <i class="bi bi-person"></i> 个人中心</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" onclick="logout(); return false;">
+                                <i class="bi bi-box-arrow-right"></i> 登出</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+</th:block>
+</body>
+</html>

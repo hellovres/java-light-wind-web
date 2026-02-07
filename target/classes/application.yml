@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: lightwind-auth
+
+server:
+  port: 8080
+
+jwt:
+  secret: my-super-secret-key-at-least-256-bits-long-for-security-please-change-in-production
+  access-token-expiration: 7200      # 2 hours
+  refresh-token-expiration: 604800   # 7 days
+
+logging:
+  level:
+    com.lightwind.web: DEBUG
+    org.springframework.security: DEBUG
