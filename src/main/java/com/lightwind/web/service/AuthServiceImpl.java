@@ -7,7 +7,6 @@ import com.lightwind.web.model.dto.RegisterRequest;
 import com.lightwind.web.model.vo.UserInfoVO;
 import com.lightwind.web.store.InMemoryUserStore;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 

@@ -6,9 +6,13 @@ import com.lightwind.web.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -21,6 +25,7 @@ import java.util.Map;
 public class AuthController {
 
     private final AuthService authService;
+    private final AuthenticationManager authenticationManager;
 
     /**
      * 用户注册
@@ -29,6 +34,32 @@ public class AuthController {
     public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
         authService.register(request);
         return ResponseEntity.ok(createSuccessResponse("注册成功", null));
+    }
+
+    /**
+     * 用户登录 - REST API 风格
+     * 支持表单提交和 JSON 请求，返回 JSON 响应
+     */
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(
+            @RequestParam String username,
+            @RequestParam String password,
+            @RequestParam(required = false, defaultValue = "false") Boolean rememberMe) {
+
+        // 使用 AuthenticationManager 进行认证
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(username, password)
+            );
+
+            // 认证成功，设置到 SecurityContext
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            return ResponseEntity.ok(createSuccessResponse("登录成功", null));
+        } catch (Exception e) {
+            return ResponseEntity.status(401)
+                    .body(createErrorResponse(401, "用户名或密码错误"));
+        }
     }
 
     /**
@@ -49,6 +80,17 @@ public class AuthController {
         response.put("code", 200);
         response.put("message", message);
         response.put("data", data);
+        response.put("timestamp", System.currentTimeMillis());
+        return response;
+    }
+
+    /**
+     * 创建错误响应
+     */
+    private Map<String, Object> createErrorResponse(int code, String message) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("code", code);
+        response.put("message", message);
         response.put("timestamp", System.currentTimeMillis());
         return response;
     }
