@@ -1,15 +1,16 @@
 spring:
   application:
-    name: lightwind-auth
+    name: java-light-wind-web
+
+  thymeleaf:
+    prefix: classpath:templates/
+    suffix: .html
+    mode: HTML
+    cache: false
 
 server:
   port: 8080
 
-# Session 配置
-session:
-  timeout: 3600  # 1 hour (seconds)
-
 logging:
   level:
-    com.lightwind.web: DEBUG
-    org.springframework.security: DEBUG
+    com.lightwind: DEBUG

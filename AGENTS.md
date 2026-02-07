@@ -1,225 +1,124 @@
-# AGENTS.md - Java Web Development Guidelines
+# AGENTS.md
 
-This document contains guidelines for agentic coding agents working in this Java web project repository.
+## Build, Test, and Lint Commands
 
-## Project Structure
+### Maven Commands (primary build tool)
+```bash
+# Build the project
+mvn clean install
 
+# Run the application (development mode)
+mvn spring-boot:run
+
+# Run all tests
+mvn test
+
+# Run a single test class
+mvn test -Dtest=ClassName
+
+# Run a specific test method
+mvn test -Dtest=ClassName#methodName
+
+# Package without tests
+mvn clean package -DskipTests
+
+# Clean build artifacts
+mvn clean
 ```
-java-light-wind-web/
-├── src/
-│   ├── main/
-│   │   ├── java/
-│   │   │   └── com/lightwind/web/
-│   │   │       ├── controller/     # REST API controllers
-│   │   │       ├── service/        # Business logic
-│   │   │       ├── repository/     # Data access layer
-│   │   │       ├── model/          # Entity classes and DTOs
-│   │   │       ├── config/         # Configuration classes
-│   │   │       └── util/           # Utility classes
-│   │   └── resources/
-│   │       ├── application.yml     # Main configuration
-│   │       ├── application-dev.yml # Development config
-│   │       └── application-prod.yml # Production config
-│   └── test/
-│       └── java/
-│           └── com/lightwind/web/
-├── pom.xml                         # Maven configuration
-└── README.md                       # Project documentation
-```
 
-## Build and Development Commands
-
-### Maven Commands
-- **Build project**: `mvn clean compile`
-- **Run tests**: `mvn test`
-- **Run single test**: `mvn test -Dtest=ClassName#methodName`
-- **Package application**: `mvn clean package`
-- **Run application**: `mvn spring-boot:run`
-- **Run with specific profile**: `mvn spring-boot:run -Dspring-boot.run.profiles=dev`
-
-### Test Commands
-- **Run all tests**: `mvn test`
-- **Run integration tests**: `mvn test -Dtest="*IntegrationTest"`
-- **Run unit tests only**: `mvn test -Dtest="*Test" -Dtest="!*IntegrationTest"`
-- **Generate test coverage**: `mvn jacoco:report`
-- **Skip tests during build**: `mvn clean package -DskipTests`
+### Running Single Tests
+- Test class: `mvn test -Dtest=UserServiceTest`
+- Test method: `mvn test -Dtest=UserServiceTest#testRegister`
+- Multiple tests: `mvn test -Dtest=UserServiceTest,AuthControllerTest`
 
 ## Code Style Guidelines
 
-### Java Code Style
-- **Indentation**: 4 spaces (no tabs)
-- **Line length**: Maximum 120 characters
-- **Brace placement**: K&R style (opening brace on same line)
-- **Imports**: Organize alphabetically, no wildcards except static imports
-- **Package naming**: All lowercase, reverse domain notation
+### Imports
+- Group imports: standard library (java.*), third-party (jakarta.*, org.springframework.*), project imports (com.lightwind.*)
+- Use `jakarta.*` namespace (not `javax.*`)
+- Avoid wildcard imports (e.g., `import com.lightwind.*`)
 
 ### Naming Conventions
-- **Classes**: PascalCase (e.g., `UserService`, `CustomerController`)
-- **Methods**: camelCase (e.g., `getUserById`, `validateInput`)
-- **Variables**: camelCase (e.g., `userRepository`, `customerId`)
-- **Constants**: UPPER_SNAKE_CASE (e.g., `MAX_RETRY_ATTEMPTS`)
-- **Packages**: lowercase with dots (e.g., `com.lightwind.web.service`)
+- **Classes**: PascalCase (UserService, AuthController, SecurityConfig)
+- **Interfaces**: PascalCase with descriptive names (UserRepository, AuthService)
+- **Methods**: camelCase, descriptive verbs (findByUsername, registerPost, filterChain)
+- **Variables**: camelCase (username, passwordEncoder, users)
+- **Constants**: UPPER_SNAKE_CASE (MAX_RETRY_COUNT)
+- **Files**: PascalCase.java matching class name
 
-### File Organization
-- One public class per file
-- File name matches class name exactly
-- Package declaration at the top
-- Imports organized: static imports first, then regular imports
+### Type Safety & Annotations
+- Use Lombok annotations to reduce boilerplate:
+  - `@Data` for getters, setters, equals, hashCode, toString
+  - `@AllArgsConstructor` for all-args constructor
+  - `@NoArgsConstructor` for no-args constructor
+- Use Spring annotations appropriately:
+  - `@Service` for service layer components
+  - `@Controller` for web controllers returning views
+  - `@RestController` for API controllers returning JSON
+  - `@Configuration` for configuration classes
+  - `@Bean` for bean definitions
+  - `@Autowired` for dependency injection (field or constructor preferred)
 
-## Spring Boot Guidelines
+### Dependency Injection
+- Constructor injection preferred for required dependencies
+- Field injection (`@Autowired` on fields) acceptable for optional or configuration dependencies
+- Use `@PostConstruct` for initialization logic after dependency injection
 
-### Controller Layer
-- Use `@RestController` for API endpoints
-- Use `@RequestMapping` at class level for base path
-- Return `ResponseEntity` for proper HTTP status codes
-- Use `@Validated` for request validation
-- Handle exceptions with `@ExceptionHandler`
+### Error Handling
+- Use `RuntimeException` or custom runtime exceptions for business logic validation
+- Provide descriptive Chinese error messages for user-facing errors (e.g., "用户名已存在")
+- Wrap checked exceptions in runtime exceptions where appropriate
+- Return user-friendly error messages in controller responses
 
-### Service Layer
-- Use `@Service` annotation
-- Implement business logic here
-- Use `@Transactional` for database operations
-- Keep methods focused and single-purpose
+### Security
+- Passwords must be encrypted using `BCryptPasswordEncoder`
+- Never store or log plaintext passwords
+- Use Spring Security for authentication and authorization
+- Configure `SecurityFilterChain` for HTTP security rules
 
-### Repository Layer
-- Use `@Repository` annotation
-- Extend `JpaRepository` or `CrudRepository`
-- Define custom queries in repository interfaces
-- Use `@Query` for complex queries
+### Formatting
+- Indentation: 4 spaces (no tabs)
+- Line length: reasonable (~100-120 chars), avoid extremely long lines
+- Empty lines: 1 blank line between methods, 2 between class members for grouping
+- Brace style: K&R style (opening brace on same line)
 
-## Error Handling
+### Logging
+- Use SLF4J with `LoggerFactory`
+- Log levels:
+  - DEBUG: Detailed diagnostics
+  - INFO: Key application events
+  - WARN: Recoverable issues
+  - ERROR: Failures requiring attention
+- Log sensitive information with care (no passwords, tokens)
 
-### Exception Types
-- **Business Exceptions**: Custom exceptions extending `RuntimeException`
-- **Validation Errors**: Use `MethodArgumentNotValidException` handling
-- **Resource Not Found**: Return 404 with clear error messages
-- **Authorization Errors**: Return 403/401 with appropriate messages
+### Testing (JUnit 5 + Spring Boot Test)
+- Use `@SpringBootTest` for integration tests
+- Use `@WebMvcTest` for controller layer tests
+- Use `@ExtendWith(MockitoExtension.class)` for unit tests
+- Test naming: `methodName_scenario_expectedResult` (e.g., `register_duplicateUsername_throwsException`)
 
-### Global Exception Handler
-```java
-@RestControllerAdvice
-public class GlobalExceptionHandler {
-    @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ErrorResponse> handleResourceNotFound(ResourceNotFoundException ex) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(new ErrorResponse(ex.getMessage()));
-    }
-}
+## Project Structure
+```
+src/
+├── main/
+│   ├── java/com/lightwind/
+│   │   ├── config/          # Configuration classes
+│   │   ├── controller/      # Web controllers
+│   │   ├── entity/          # Domain entities
+│   │   ├── service/         # Business logic
+│   │   └── *Application.java # Main application class
+│   └── resources/
+│       ├── application.yml  # Spring configuration
+│       ├── static/          # Static assets
+│       └── templates/       # Thymeleaf templates
+└── test/                    # Test sources
 ```
 
-## Testing Guidelines
-
-### Test Structure
-- Unit tests: Test individual methods in isolation
-- Integration tests: Test component interactions
-- Use `@SpringBootTest` for integration tests
-- Use `@MockBean` for mocking dependencies
-- Test naming: `methodName_expectedBehavior_whenCondition`
-
-### Test Coverage
-- Aim for 80%+ code coverage
-- Test both positive and negative scenarios
-- Test edge cases and boundary conditions
-- Use meaningful assertions
-
-## Configuration Management
-
-### Profiles
-- **dev**: Development environment with debug logging
-- **test**: Test environment with in-memory database
-- **prod**: Production environment with optimized settings
-
-### Application Properties
-- Use YAML format for configuration
-- Externalize sensitive information
-- Use environment variables for deployment-specific values
-- Include proper database connection pooling settings
-
-## Security Guidelines
-
-### Authentication & Authorization
-- Use Spring Security for authentication
-- Implement JWT for stateless authentication
-- Use role-based access control (RBAC)
-- Validate all input parameters
-- Sanitize data to prevent injection attacks
-
-### API Security
-- Enable HTTPS in production
-- Use CORS configuration properly
-- Implement rate limiting for public APIs
-- Log security-relevant events
-
-## Database Guidelines
-
-### Entity Design
-- Use JPA annotations properly
-- Define appropriate relationships (@OneToMany, @ManyToOne, etc.)
-- Use `@Lob` for large text fields
-- Implement proper equals() and hashCode() methods
-- Use `@GeneratedValue` for primary keys
-
-### Data Access
-- Use repository pattern consistently
-- Implement pagination for large datasets
-- Use DTOs for data transfer to avoid lazy loading issues
-- Consider using database migrations (Flyway/Liquibase)
-
-## Performance Guidelines
-
-### Caching
-- Use Spring Cache abstraction
-- Implement caching for frequently accessed data
-- Choose appropriate cache TTL values
-- Monitor cache hit rates
-
-### Optimization
-- Use connection pooling (HikariCP)
-- Implement pagination for large result sets
-- Use asynchronous processing for long-running operations
-- Monitor application performance metrics
-
-## Logging Guidelines
-
-### Log Levels
-- **ERROR**: System errors that need immediate attention
-- **WARN**: Unexpected situations that don't stop the application
-- **INFO**: Important business events and configuration
-- **DEBUG**: Detailed information for troubleshooting
-
-### Best Practices
-- Use structured logging with context
-- Avoid logging sensitive information
-- Use appropriate log levels for production
-- Implement log rotation and archiving
-
-## Code Review Checklist
-
-- [ ] Code follows naming conventions
-- [ ] Methods are single-purpose and well-named
-- [ ] Error handling is comprehensive
-- [ ] Tests cover critical paths
-- [ ] No hardcoded values or magic numbers
-- [ ] Proper validation of input parameters
-- [ ] Security considerations addressed
-- [ ] Performance implications considered
-- [ ] Documentation is clear and concise
-- [ ] Dependencies are necessary and secure
-
-## Tool Configuration
-
-This project uses:
-- **Build Tool**: Maven
-- **Framework**: Spring Boot 3.x
-- **Database**: PostgreSQL (configurable)
-- **Testing**: JUnit 5, Mockito, Spring Test
-- **Code Quality**: SonarQube, Checkstyle
-- **Documentation**: Swagger/OpenAPI 3
-
-## Git Workflow
-
-- Use feature branches for new development
-- Commit messages should follow conventional commit format
-- Create pull requests for code review
-- Ensure CI/CD pipeline passes before merging
-- Tag releases with semantic versioning
+## Technology Stack
+- Java 17
+- Spring Boot 3.2.0
+- Spring Security (authentication/authorization)
+- Thymeleaf (server-side templating)
+- Lombok (code generation)
+- JUnit 5 + Mockito (testing)
+- Maven (build tool)
