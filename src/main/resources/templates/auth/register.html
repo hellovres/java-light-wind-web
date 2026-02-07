@@ -28,8 +28,8 @@
                 <span th:text="${error}"></span>
             </div>
 
-            <!-- 注册表单 -->
-            <form id="registerForm" th:action="@{/register}" method="post" novalidate>
+            <!-- 注册表单 - Session认证 -->
+            <form th:action="@{/api/auth/register}" method="post" id="registerForm">
                 <div class="mb-3">
                     <div class="form-floating">
                         <input type="text" class="form-control" id="username" name="username"
@@ -96,53 +96,23 @@
 
 <th:block layout:fragment="scripts">
     <script>
-        // 表单提交
-        document.getElementById('registerForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const username = document.getElementById('username').value.trim();
+        // 表单提交处理 - 验证密码一致性
+        document.getElementById('registerForm')?.addEventListener('submit', function(e) {
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const agree = document.getElementById('agree').checked;
-
-            // 验证
-            if (!username) {
-                showToast('请输入用户名', 'error');
-                return;
-            }
-
-            if (username.length < 3 || username.length > 50) {
-                showToast('用户名长度必须在3-50个字符之间', 'error');
-                return;
-            }
-
-            if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                showToast('用户名只能包含字母、数字和下划线', 'error');
-                return;
-            }
-
-            if (!password) {
-                showToast('请输入密码', 'error');
-                return;
-            }
-
-            if (password.length < 6) {
-                showToast('密码长度至少为6个字符', 'error');
-                return;
-            }
 
             if (password !== confirmPassword) {
+                e.preventDefault();
                 showToast('两次密码不一致', 'error');
                 return;
             }
 
-            if (!agree) {
-                showToast('请阅读并同意服务条款和隐私政策', 'error');
-                return;
+            // 添加加载状态
+            const registerBtn = document.getElementById('registerBtn');
+            if (registerBtn) {
+                registerBtn.disabled = true;
+                registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 注册中...';
             }
-
-            // 提交注册
-            submitRegister(username, password);
         });
     </script>
 </th:block>

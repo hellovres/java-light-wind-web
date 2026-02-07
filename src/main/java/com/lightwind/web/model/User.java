@@ -15,5 +15,5 @@ import lombok.NoArgsConstructor;
 public class User {
     private Long id;
     private String username;
-    private String password;  // 明文密码
+    private String password;  // BCrypt加密后的密码
 }

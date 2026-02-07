@@ -1,12 +1,12 @@
-# Light Wind Auth - 最小JWT登录系统
+# Light Wind Auth - 最小Session登录系统
 
-基于Spring Boot + JWT的最小化登录认证系统，使用内存存储，无需数据库。
+基于Spring Boot + Session的最小化登录认证系统，使用内存存储，无需数据库。
 
 ## 技术栈
 
 - Spring Boot 3.2
 - Spring Security 6
-- JWT (JSON Web Token)
+- Session 认证
 - BCrypt 密码加密
 - 内存存储（ConcurrentHashMap）
 - Thymeleaf 3.1 (模板引擎)
@@ -16,8 +16,7 @@
 
 - ✅ 用户注册
 - ✅ 用户名+密码登录
-- ✅ JWT Token 认证（2小时有效期）
-- ✅ Token 刷新机制（7天有效期）
+- ✅ Session 认证
 - ✅ 获取当前用户信息
 - ✅ 用户登出
 
@@ -26,31 +25,23 @@
 ```
 src/main/java/com/lightwind/web/
 ├── controller/
-│   └── AuthController.java           # 认证API控制器
+│   ├── AuthController.java           # 认证API控制器
+│   └── PageController.java           # 页面控制器
 ├── service/
 │   ├── AuthService.java              # 认证服务接口
 │   └── AuthServiceImpl.java          # 认证服务实现
 ├── store/                            # 内存存储
-│   ├── InMemoryUserStore.java        # 用户数据存储
-│   └── InMemoryRefreshTokenStore.java # 刷新令牌存储
+│   └── InMemoryUserStore.java        # 用户数据存储
 ├── model/
 │   ├── User.java                     # 用户实体
 │   ├── dto/                          # 数据传输对象
-│   │   ├── LoginRequest.java
-│   │   ├── RegisterRequest.java
-│   │   ├── RefreshTokenRequest.java
-│   │   └── LoginResponse.java
+│   │   └── RegisterRequest.java
 │   └── vo/                           # 视图对象
 │       └── UserInfoVO.java
-├── security/
-│   ├── JwtUtil.java                  # JWT工具类
-│   ├── JwtAuthenticationFilter.java  # JWT认证过滤器
-│   └── CustomUserDetailsService.java # 用户详情服务
 ├── config/
 │   └── SecurityConfig.java           # Spring Security配置
 └── exception/
     ├── AuthenticationException.java  # 认证异常
-    ├── InvalidTokenException.java    # Token无效异常
     ├── UserAlreadyExistsException.java # 用户已存在异常
     └── GlobalExceptionHandler.java   # 全局异常处理器
 ```
@@ -107,11 +98,7 @@ Content-Type: application/json
 {
   "code": 200,
   "message": "注册成功",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 7200
-  },
+  "data": null,
   "timestamp": 1707200000000
 }
 ```
@@ -120,34 +107,18 @@ Content-Type: application/json
 
 ```http
 POST /api/auth/login
-Content-Type: application/json
+Content-Type: application/x-www-form-urlencoded
 
-{
-  "username": "admin",
-  "password": "admin123"
-}
+username=admin&password=admin123
 ```
 
-**响应示例：**
-
-```json
-{
-  "code": 200,
-  "message": "登录成功",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 7200
-  },
-  "timestamp": 1707200000000
-}
-```
+**登录成功后重定向到首页**
 
 ### 3. 获取当前用户信息
 
 ```http
 GET /api/auth/me
-Authorization: Bearer {token}
+Cookie: JSESSIONID=xxx
 ```
 
 **响应示例：**
@@ -164,48 +135,14 @@ Authorization: Bearer {token}
 }
 ```
 
-### 4. 刷新Token
-
-```http
-POST /api/auth/refresh
-Content-Type: application/json
-
-{
-  "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
-
-**响应示例：**
-
-```json
-{
-  "code": 200,
-  "message": "刷新成功",
-  "data": {
-    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-    "expiresIn": 7200
-  },
-  "timestamp": 1707200000000
-}
-```
-
-### 5. 用户登出
+### 4. 用户登出
 
 ```http
 POST /api/auth/logout
-Authorization: Bearer {token}
+Cookie: JSESSIONID=xxx
 ```
 
-**响应示例：**
-
-```json
-{
-  "code": 200,
-  "message": "登出成功",
-  "data": null,
-  "timestamp": 1707200000000
-}
-```
+**登出成功后重定向到登录页**
 
 ## 使用 cURL 测试
 
@@ -214,37 +151,33 @@ Authorization: Bearer {token}
 ```bash
 curl -X POST http://localhost:8080/api/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username": "testuser", "password": "password123"}'
+  -d '{"username": "testuser", "password": "password123"}' \
+  -c cookies.txt
 ```
 
 ### 登录
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"username": "admin", "password": "admin123"}'
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin&password=admin123" \
+  -c cookies.txt \
+  -L
 ```
 
 ### 获取用户信息
 
 ```bash
 curl -X GET http://localhost:8080/api/auth/me \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
-```
-
-### 刷新Token
-
-```bash
-curl -X POST http://localhost:8080/api/auth/refresh \
-  -H "Content-Type: application/json" \
-  -d '{"refreshToken": "YOUR_REFRESH_TOKEN_HERE"}'
+  -b cookies.txt
 ```
 
 ### 登出
 
 ```bash
 curl -X POST http://localhost:8080/api/auth/logout \
-  -H "Authorization: Bearer YOUR_TOKEN_HERE"
+  -b cookies.txt \
+  -L
 ```
 
 ## 配置说明
@@ -252,20 +185,9 @@ curl -X POST http://localhost:8080/api/auth/logout \
 ### application.yml
 
 ```yaml
-jwt:
-  secret: my-super-secret-key-at-least-256-bits-long-for-security-please-change-in-production
-  access-token-expiration: 7200      # 2 hours
-  refresh-token-expiration: 604800   # 7 days
-```
-
-### 生产环境配置
-
-创建 `application-prod.yml` 或通过环境变量配置：
-
-```bash
-java -jar target/java-light-wind-web-1.0.0.jar \
-    --spring.profiles.active=prod \
-    --JWT_SECRET=your-super-secret-key-at-least-256-bits-long
+# Session 配置
+session:
+  timeout: 3600  # 1 hour (seconds)
 ```
 
 ## 注意事项
@@ -289,21 +211,18 @@ java -jar target/java-light-wind-web-1.0.0.jar \
 1. 添加 Spring Data JPA 依赖
 2. 配置数据库（PostgreSQL、MySQL等）
 3. 替换 `InMemoryUserStore` 为 `UserRepository`
-4. 替换 `InMemoryRefreshTokenStore` 为 `RefreshTokenRepository`
 
 ## 安全建议
 
-1. **生产环境必须更改JWT密钥**：使用至少256位的随机字符串
-2. **使用HTTPS**：在生产环境中启用HTTPS传输
-3. **定期更新依赖**：保持Spring Boot和相关依赖为最新版本
-4. **添加验证码**：防止暴力破解登录
-5. **实现限流**：防止恶意请求攻击
+1. **使用HTTPS**：在生产环境中启用HTTPS传输
+2. **定期更新依赖**：保持Spring Boot和相关依赖为最新版本
+3. **添加验证码**：防止暴力破解登录
+4. **实现限流**：防止恶意请求攻击
+5. **Session 安全**：配置 HTTPS-only Cookie，防止 Session 固定攻击
 
 ## 相关文档
 
-- [设计文档](docs/最小登录功能设计文档-无数据库版.md)
 - [Spring Security 官方文档](https://docs.spring.io/spring-security/reference/)
-- [JWT RFC 7519](https://tools.ietf.org/html/rfc7519)
 
 ## License
 

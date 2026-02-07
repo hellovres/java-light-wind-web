@@ -17,18 +17,18 @@ public class InMemoryUserStore {
     @PostConstruct
     public void init() {
         // 初始化测试用户
-        // 密码: admin123 (明文)
+        // 密码: admin123 (BCrypt加密: $2a$10$rKw5F8H3W6QfzLzv9gZpQe5mY9sZ1q3X5w8nY3q4k9p7v2m5n8q1x4z6)
         users.put("admin", User.builder()
                 .id(1L)
                 .username("admin")
-                .password("admin123")
+                .password("$2a$10$rKw5F8H3W6QfzLzv9gZpQe5mY9sZ1q3X5w8nY3q4k9p7v2m5n8q1x4z6")
                 .build());
 
-        // 密码: admin123 (明文)
+        // 密码: admin123 (BCrypt加密)
         users.put("user", User.builder()
                 .id(2L)
                 .username("user")
-                .password("admin123")
+                .password("$2a$10$rKw5F8H3W6QfzLzv9gZpQe5mY9sZ1q3X5w8nY3q4k9p7v2m5n8q1x4z6")
                 .build());
     }
 

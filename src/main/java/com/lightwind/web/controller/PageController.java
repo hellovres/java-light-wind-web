@@ -3,7 +3,6 @@ package com.lightwind.web.controller;
 import com.lightwind.web.model.dto.RegisterRequest;
 import com.lightwind.web.model.vo.UserInfoVO;
 import com.lightwind.web.service.AuthService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -74,24 +73,10 @@ public class PageController {
     }
 
     /**
-     * 登出页面
-     */
-    @GetMapping("/logout")
-    public String logoutPage(HttpServletRequest request) {
-        // 清除Session
-        HttpSession session = request.getSession(false);
-        if (session != null) {
-            session.invalidate();
-        }
-        return "redirect:/login";
-    }
-
-    /**
      * 获取错误消息
      */
     private String getErrorMessage(String error) {
         return switch (error) {
-            case "token_expired" -> "登录已过期，请重新登录";
             case "credentials" -> "用户名或密码错误";
             case "locked" -> "账号已被锁定，请联系管理员";
             case "disabled" -> "账号已被禁用，请联系管理员";
