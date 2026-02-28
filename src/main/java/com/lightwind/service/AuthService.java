@@ -2,8 +2,6 @@ package com.lightwind.service;
 
 import com.lightwind.entity.User;
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
